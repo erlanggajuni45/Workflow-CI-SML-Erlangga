@@ -15,15 +15,15 @@ else:
 
 def train_baseline():
     # Path dataset hasil preprocessing
-    train_path = "preprocessing/diabetes_dataset/diabetes_train.csv"
-    test_path = "preprocessing/diabetes_dataset/diabetes_test.csv"
+    train_path = "diabetes_dataset/diabetes_train.csv"
+    test_path = "diabetes_dataset/diabetes_test.csv"
     
     # Fallback path jika dieksekusi dari dalam folder Membangun_model
     if not os.path.exists(train_path):
-        train_path = "../preprocessing/diabetes_dataset/diabetes_train.csv"
-        test_path = "../preprocessing/diabetes_dataset/diabetes_test.csv"
+        train_path = "../diabetes_dataset/diabetes_train.csv"
+        test_path = "../diabetes_dataset/diabetes_test.csv"
 
-    # Load data
+    # Load datas
     train_data = pd.read_csv(train_path)
     test_data = pd.read_csv(test_path)
     
