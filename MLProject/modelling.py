@@ -7,7 +7,11 @@ import mlflow.sklearn
 import dagshub
 
 # Inisialisasi koneksi DagsHub Tracking 
-dagshub.init(repo_owner="erlanggajuni45", repo_name="Eksperimen_SML_Erlangga", mlflow=True)
+if not os.environ.get("GITHUB_ACTIONS"):
+    # Hanya jalankan inisialisasi interaktif jika di komputer lokal kamu
+    dagshub.init(repo_owner="erlanggajuni45", repo_name="Eksperimen_SML_Erlangga", mlflow=True)
+else:
+    print("Berjalan di lingkungan CI: Menggunakan konfigurasi environment variables untuk MLflow.")
 
 def train_baseline():
     # Path dataset hasil preprocessing
