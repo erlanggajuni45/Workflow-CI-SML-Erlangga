@@ -22,13 +22,17 @@ jobs:
 
     - name: Create MLproject File inside Folder
       run: |
-        # Membuat berkas MLproject teks biasa yang valid di dalam folder MLProject
         cat << 'EOF' > MLProject/MLproject
         name: Diabetes_CI_Project
         entry_points:
           main:
             command: "python modelling.py"
         EOF
+
+    - name: Prepare Dataset Structure for MLflow
+      run: |
+        mkdir -p preprocessing/diabetes_dataset
+        cp diabetes_dataset/*.csv preprocessing/diabetes_dataset/
 
     - name: Run MLflow Project (Re-training)
       env:
@@ -46,7 +50,6 @@ jobs:
 
     - name: Build and Push Docker Image
       env:
-        # Menambahkan kredensial tracking di sini agar mlflow models build-docker bisa mendownload model dari DagsHub
         MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
         MLFLOW_TRACKING_URI: https://${{ secrets.DAGSHUB_USERNAME }}:${{ secrets.DAGSHUB_TOKEN }}@dagshub.com/${{ secrets.DAGSHUB_USERNAME }}/Eksperimen_SML_Erlangga.mlflow
@@ -54,6 +57,6 @@ jobs:
         # Mengambil Run ID terbaru dari eksperimen 'Diabetes_Baseline_Erlangga' di DagsHub
         LATEST_RUN=$(python -c "import mlflow; mlflow.set_tracking_uri('${{ env.MLFLOW_TRACKING_URI }}'); exp = mlflow.get_experiment_by_name('Diabetes_Baseline_Erlangga'); runs = mlflow.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC']); print(runs.iloc[0]['run_id'])")
         
-        # Membuat Docker Image menggunakan remote URI model
-        mlflow models build-docker -m "runs:/$LATEST_RUN/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/diabetes-model:latest"
+        # SOLUSI: Ditambahkan --env-manager local agar Docker image mewarisi runtime Python 3.12 dari runner, bukan Python 3.9 lawas
+        mlflow models build-docker -m "runs:/$LATEST_RUN/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/diabetes-model:latest" --env-manager local
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/diabetes-model:latest
