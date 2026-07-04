@@ -18,14 +18,13 @@ jobs:
 
     - name: Install MLflow & Dependencies
       run: |
-        pip install mlflow==2.19.0 dagshub pandas scikit-learn numpy
+        pip install mlflow==2.19.0 dagshub pandas scikit-learn numpy matplotlib seaborn
 
     - name: Create MLproject File inside Folder
       run: |
-        # Membuat berkas MLproject yang valid langsung di dalam folder MLProject
+        # Membuat berkas MLproject teks biasa yang valid di dalam folder MLProject
         cat << 'EOF' > MLProject/MLproject
         name: Diabetes_CI_Project
-        conda_env: conda.yaml
         entry_points:
           main:
             command: "python modelling.py"
@@ -36,8 +35,7 @@ jobs:
         MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
       run: |
-        # Jalankan MLflow dengan menunjuk langsung ke folder MLProject/
-        mlflow run MLProject/
+        mlflow run MLProject/ --no-conda
 
     - name: Login to Docker Hub
       uses: docker/login-action@v3
@@ -50,6 +48,5 @@ jobs:
         # Mengambil Run ID terbaru dari eksperimen 'Diabetes_Baseline_Erlangga' di DagsHub
         LATEST_RUN=$(python -c "import mlflow; mlflow.set_tracking_uri('https://dagshub.com/${{ secrets.DAGSHUB_USERNAME }}/Eksperimen_SML_Erlangga.mlflow'); exp = mlflow.get_experiment_by_name('Diabetes_Baseline_Erlangga'); runs = mlflow.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC']); print(runs.iloc[0]['run_id'])")
         
-        # Membuat Docker Image dari model terbaru dan mempublikasikannya ke Docker Hub
         mlflow models build-docker -m "runs:/$LATEST_RUN/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/diabetes-model:latest"
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/diabetes-model:latest
