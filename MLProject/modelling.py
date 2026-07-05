@@ -10,6 +10,7 @@ import dagshub
 if not os.environ.get("GITHUB_ACTIONS"):
     # Hanya jalankan inisialisasi interaktif jika di komputer lokal kamu
     dagshub.init(repo_owner="erlanggajuni45", repo_name="Eksperimen_SML_Erlangga", mlflow=True)
+    pass
 else:
     print("Berjalan di lingkungan CI: Menggunakan konfigurasi environment variables untuk MLflow.")
 
